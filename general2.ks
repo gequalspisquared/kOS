@@ -114,13 +114,15 @@ FUNCTION executeNextNode {
     IF HASNODE = true {
         SET originalmnv TO NEXTNODE.
         LOCK currentmnv TO NEXTNODE.
+    } ELSE {
+        RETURN "NO NODE GIVEN".
     }
     
     DECLARE startTime TO calculateManeuverStartTime(originalmnv).
     lockSteeringToManeuverTarget(currentmnv).
     WAIT UNTIL startTime.
-    WHEN vang(originalmnv:BURNVECTOR, SHIP:FACING:VECTOR) < 0.5 THEN {
-        LOCK THROTTLE TO 1.
+    WHEN vang(originalmnv:BURNVECTOR, SHIP:FACING:VECTOR) < 0.5 AND TIME:SECONDS > startTime -0.1 THEN {
+        LOCK THROTTLE TO 1.   
     }
 
     UNTIL isManeuverComplete(originalmnv, currentmnv) {
@@ -139,7 +141,6 @@ FUNCTION executeNextNode {
 FUNCTION calculateManeuverStartTime {
     PARAMETER mnv.
     RETURN TIME:SECONDS + mnv:ETA - calculateManeuverBurnTime(mnv) / 2.
-
 }
 
 // calculates burn time of a maneuver node
